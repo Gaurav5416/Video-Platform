@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose"
 
 
 const generateAccessAndRefreshTokens = async(userId)=>{
@@ -175,7 +176,10 @@ const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set : { refreshToken : undefined },
+            $unset : 
+            { 
+                refreshToken : 1 
+            },
         },
         {
             new : true 
@@ -218,18 +222,18 @@ const refreshAccessToken = asyncHandler(async (req, res)=>{
             secure : true,
         }
     
-        const { newAccessToken, newRefreshToken } = await generateAccessAndRefreshTokens(user._id)
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
     
         return res
         .status(200)
-        .cookie("accessToken", newAccessToken, options)
-        .cookie("refreshToken", newRefreshToken, options)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
         .json(
             new ApiResponse(
                 200,
                 {
-                    accessToken : newAccessToken,
-                    refreshToken : newRefreshToken, 
+                    accessToken : accessToken,
+                    refreshToken : refreshToken, 
                 },
                 "Tokens refreshed sucessfully"
             )
@@ -264,24 +268,31 @@ const changeCurrentPassword = asyncHandler(async(req, res) => {
 const getCurrentUser = asyncHandler(async(req, res)  => {
     return res
     .status(200)
-    .json(200, req.user, "User fetched successfully")
+    .json(
+        new ApiResponse(200, req.user, "User fetched successfully"))
 })
 
 const updateAccountDetails = asyncHandler(async(req, res) => {
-    const { fullname, email, username,  } = req.body
+    const { fullname, email, username  } = req.body
 
-    if(!fullname || !username){
+    if(!username && !email){
         throw new ApiError(400, "All fields are required")
     }
 
-    const user = await User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate
+    (
         req.user?._id,
-        {$set : {
-            fullname,
-            email,
-            username,
-        }},
-        {new : true}
+        {
+            $set : 
+            {
+                fullname,
+                email,
+                username,
+            }
+        },
+        {
+            new : true
+        }
     ).select("-password")
 
     return res
@@ -387,7 +398,7 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {
                 } 
             },
             {
-                $addFields: 
+                $addFields : 
                 { 
                     subscribersCount : 
                     {
@@ -401,7 +412,7 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {
 
                     isSubscribed : 
                     {
-                        $condition :                 
+                        $cond :                 
                         {
                             if : 
                             {
