@@ -111,7 +111,9 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, subscribers, "subscribers fetched successfully"));
+    .json(
+      new ApiResponse(200, subscribers, "subscribers fetched successfully")
+    );
 });
 
 // controller to return channel list to which user has subscribed
@@ -156,7 +158,10 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
   ]);
 
   if (!channels) {
-    throw new ApiError(500, "something went wrong while fetching subscribed channels");
+    throw new ApiError(
+      500,
+      "something went wrong while fetching subscribed channels"
+    );
   }
 
   console.log(channels);

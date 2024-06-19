@@ -70,10 +70,9 @@ const getUserTweets = asyncHandler(async (req, res) => {
 });
 
 const updateTweet = asyncHandler(async (req, res) => {
-  const { newContent } = req.body
-  const tweetId = req.params.tweetId
+  const { newContent } = req.body;
+  const tweetId = req.params.tweetId;
 
-  
   const tweet = await Tweet.findById(tweetId);
 
   if (!tweet) {
@@ -86,7 +85,6 @@ const updateTweet = asyncHandler(async (req, res) => {
 
   tweet.content = newContent;
   await tweet.save({ validateBeforeSave: false });
-  
 
   return res
     .status(200)
@@ -105,16 +103,13 @@ const deleteTweet = asyncHandler(async (req, res) => {
     owner: req.user._id,
   });
 
-  if(!tweetData){
-    throw new ApiError(404, "tweet not found")
+  if (!tweetData) {
+    throw new ApiError(404, "tweet not found");
   }
-  
+
   return res
     .status(200)
-    .json(new ApiResponse(200, {},"Tweet delete successfully"));
-
+    .json(new ApiResponse(200, {}, "Tweet delete successfully"));
 });
 
 export { createTweet, getUserTweets, updateTweet, deleteTweet };
-
-
